@@ -1,0 +1,14 @@
+approach_name,F1,IoU,Pr,Re,Acc
+bilateral_Otsu,0.2155,0.1486,0.1656,0.5028,0.8481
+bilateral_adaptive,0.0469,0.0249,0.0252,0.7757,0.0582
+bilater_otsu_w_classifier,0.2925,0.2257,0.2462,0.6321,0.8597
+bilater_otsu_w_edges_0.1,0.1488,0.1218,0.4824,0.2386,0.9268
+bilater_otsu_w_edges_0.2,0.1201,0.1041,0.4718,0.1968,0.9334
+bilater_otsu_w_edges_0.15,0.1305,0.1104,0.4757,0.2119,0.9301
+bilater_otsu_w_edges_0.05,0.1900,0.1498,0.4961,0.3003,0.9236
+bilater_otsu_w_edges_0.06,0.1788,0.1417,0.4932,0.2824,0.9243
+bilater_otsu_w_edges_0.05_and_classifier,0.2146,0.1745,0.5238,0.2997,0.9262, <------
+bilater_otsu_after_combining_w_edges,0.2264,0.1569,0.1766,0.6280,0.8611
+bilater_otsu_after_combining_w_edges_pt1.5,0.2243,0.1554,0.1739,0.6337,0.8569
+bilater_otsu_after_combining_w_edges_pt0.8,0.2275,0.1577,0.1780,0.6244,0.8633
+bilater_otsu_after_combining_w_edges_pt0.8_and_classifier,0.3044,0.2348,0.2586,0.6234,0.8739, <------

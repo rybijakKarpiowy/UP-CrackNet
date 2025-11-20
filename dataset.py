@@ -12,20 +12,17 @@ class DatasetFromFolder(data.Dataset):
     def __init__(self, image_dir, subfolder='train', direction='AtoB', transform=None, resize_scale=None, crop_size=None, fliplr=False):
         super(DatasetFromFolder, self).__init__()
         if direction == 'AtoB':
-            self.input_path = os.path.join(image_dir, subfolder, 'a')
-            self.target_path = os.path.join(image_dir, subfolder, 'b')
+            self.input_path = os.path.join(image_dir, subfolder, 'images')
+            self.target_path = os.path.join(image_dir, subfolder, 'images')
         else:
             self.input_path = os.path.join(image_dir, subfolder, 'b')
             self.target_path = os.path.join(image_dir, subfolder, 'a')
 
-        print(self.input_path)
-        print(self.target_path)
         self.image_filenames = [x for x in sorted(os.listdir(self.input_path))]
-        print(self.image_filenames)
         self.direction = direction
         self.transform = transform
-        self.resize_scale = resize_scale    # resize_scale = 286
-        self.crop_size = crop_size  # crop_size = 256
+        self.resize_scale = resize_scale    # resize_scale = 512
+        self.crop_size = crop_size  # crop_size = 448
         self.fliplr = fliplr    # fliplr = True
 
     def __getitem__(self, index):

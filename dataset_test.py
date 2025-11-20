@@ -15,9 +15,9 @@ class DatasetFromFolder(data.Dataset):
             self.target_path = os.path.join(image_dir, subfolder, 'b')
             self.label_path = os.path.join(image_dir, subfolder, 'label')
         else:
-            self.input_path = os.path.join(image_dir, subfolder, 'b')
-            self.target_path = os.path.join(image_dir, subfolder, 'a')
-            self.label_path = os.path.join(image_dir, subfolder, 'label')
+            self.input_path = os.path.join(image_dir, subfolder, 'images')
+            self.target_path = os.path.join(image_dir, subfolder, 'masks')
+            self.label_path = os.path.join(image_dir, subfolder, 'masks')
 
         print(self.input_path)
         print(self.target_path)

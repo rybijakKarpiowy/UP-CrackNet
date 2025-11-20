@@ -2,7 +2,7 @@ import torch
 from torchvision import transforms
 from torch.autograd import Variable
 from dataset import DatasetFromFolder
-from model import Generator, Discriminator
+from model import Generator448, Discriminator448
 import utils
 import argparse
 import os
@@ -20,23 +20,23 @@ from PS_loss import StyleLoss, PerceptualLoss
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', required=False, default='all_crack500_train', help='input dataset')
 parser.add_argument('--direction', required=False, default='AtoB', help='input and target image order')
-parser.add_argument('--batch_size', type=int, default=8, help='train batch size')
+parser.add_argument('--batch_size', type=int, default=4, help='train batch size')
 parser.add_argument('--ngf', type=int, default=64)
 parser.add_argument('--ndf', type=int, default=64)
-parser.add_argument('--input_size', type=int, default=256, help='input size')
-parser.add_argument('--resize_scale', type=int, default=286, help='resize scale (0 is false)')
-parser.add_argument('--crop_size', type=int, default=256, help='crop size (0 is false)')
+parser.add_argument('--input_size', type=int, default=448, help='input size')
+parser.add_argument('--resize_scale', type=int, default=512, help='resize scale (0 is false)')
+parser.add_argument('--crop_size', type=int, default=448, help='crop size (0 is false)')
 parser.add_argument('--fliplr', type=bool, default=True, help='random fliplr True of False')
-parser.add_argument('--num_epochs', type=int, default=300, help='number of train epochs')
-parser.add_argument('--lrG', type=float, default=0.0008, help='learning rate for generator, default=0.0002')
-parser.add_argument('--lrD', type=float, default=0.0002, help='learning rate for discriminator, default=0.0002')
+parser.add_argument('--num_epochs', type=int, default=1000, help='number of train epochs')
+parser.add_argument('--lrG', type=float, default=0.0001, help='learning rate for generator, default=0.0002')
+parser.add_argument('--lrD', type=float, default=0.0004, help='learning rate for discriminator, default=0.0002')
 parser.add_argument('--lamb', type=float, default=100, help='lambda for L1 loss')
 parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for Adam optimizer')
 parser.add_argument('--beta2', type=float, default=0.999, help='beta2 for Adam optimizer')
 params = parser.parse_args()
 print(params)
 
-writer = SummaryWriter('./path/log1')
+writer = SummaryWriter('./path/log2')
 
 # SSIM:
 def gaussian(window_size, sigma):
@@ -108,15 +108,16 @@ def ssim(img1, img2, window_size = 11, size_average = True):
     return _ssim(img1, img2, window, window_size, channel, size_average)
 
 
-data_dir = './dataset/crack500_train_github/'
-model_dir = './saved-model/'
+data_dir = './crack_segmentation_dataset/noncrack'
+model_dir = './saved-model/448/'
 
 if not os.path.exists(model_dir):
     os.mkdir(model_dir)
 
 transform = transforms.Compose([transforms.Resize(params.input_size),
                                 transforms.ToTensor(),
-                                transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
+                                transforms.Normalize(mean=[0.505, 0.494, 0.474], std=[0.098, 0.099, 0.099])
+                                ])
 
 
 train_data = DatasetFromFolder(data_dir, subfolder='train', direction=params.direction, 
@@ -125,7 +126,9 @@ train_data = DatasetFromFolder(data_dir, subfolder='train', direction=params.dir
 
 train_data_loader = torch.utils.data.DataLoader(dataset=train_data,
                                                 batch_size=params.batch_size,
-                                                shuffle=True, pin_memory=True, num_workers=72, prefetch_factor=20, persistent_workers=True)
+                                                shuffle=True,
+                                                # What is pin memory about??
+                                                pin_memory=True, num_workers=2, prefetch_factor=4, persistent_workers=True)
 
 test_data = DatasetFromFolder(data_dir, subfolder='validation', direction=params.direction, transform=transform)
 
@@ -134,10 +137,11 @@ test_data_loader = torch.utils.data.DataLoader(dataset=test_data,
                                                shuffle=False)
 
 # test_input, test_target, test_mask = test_data_loader.__iter__().__next__()
+# print("Data loaders created")
 
 
-G = Generator(3, params.ngf, 3)
-D = Discriminator(6, params.ndf, 1)
+G = Generator448(3, params.ngf, 3)
+D = Discriminator448(6, params.ndf, 1)
 G.cuda()
 D.cuda()
 
@@ -179,6 +183,9 @@ loss_L1_SSIM_GMS = False
 loss_L1_SSIM_GMS_Style = True
 
 best_val_loss = 10000000000
+
+# print("Start training")
+# print(f"Epochs: {params.num_epochs}")
 
 for epoch in range(params.num_epochs):
     D_losses = []

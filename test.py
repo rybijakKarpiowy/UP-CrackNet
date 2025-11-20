@@ -3,11 +3,12 @@ import torch
 from torchvision import transforms
 from torch.autograd import Variable
 from dataset_test import DatasetFromFolder
-from model import Generator, Discriminator
+from model import Discriminator448, Generator, Discriminator, Generator448
 import utils
 import argparse
 import os
 from stride_augmentation import *
+from matplotlib import pyplot as plt
 
 
 
@@ -17,13 +18,13 @@ parser.add_argument('--direction', required=False, default='BtoA', help='input a
 parser.add_argument('--batch_size', type=int, default=1, help='test batch size')
 parser.add_argument('--ngf', type=int, default=64)
 parser.add_argument('--ndf', type=int, default=64)
-parser.add_argument('--input_size', type=int, default=256, help='input size')
+parser.add_argument('--input_size', type=int, default=448, help='input size')
 params = parser.parse_args()
 print(params)
 
 
-data_dir = './dataset/crack500_test/'
-model_dir = './saved-model/'
+data_dir = './crack_segmentation_dataset/'
+model_dir = './saved-model/448/'
 save_error_dir = './model_crack500_results/best/'
 
 
@@ -35,19 +36,20 @@ if not os.path.exists(save_error_dir):
     os.mkdir(save_error_dir)
 
 # Data pre-processing
-test_transform = transforms.Compose([transforms.Scale(params.input_size),
+test_transform = transforms.Compose([transforms.Resize(params.input_size),
                                      transforms.ToTensor(),
-                                     transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))])
+                                     transforms.Normalize(mean=[0.505, 0.494, 0.474], std=[0.098, 0.099, 0.099])
+                                     ])
 
 # Test data
-test_data = DatasetFromFolder(data_dir, subfolder='test_folder_all', direction=params.direction, transform=test_transform)
+test_data = DatasetFromFolder(data_dir, subfolder='test', direction=params.direction, transform=test_transform)
 test_data_loader = torch.utils.data.DataLoader(dataset=test_data,
                                                batch_size=params.batch_size,
                                                shuffle=False)
 # Load model
-G = Generator(3, params.ngf, 3)
+G = Generator448(3, params.ngf, 3)
 # add by nachuan
-D = Discriminator(6, params.ndf, 1)
+D = Discriminator448(6, params.ndf, 1)
 D.cuda()
 G.cuda()
 
@@ -104,7 +106,7 @@ for i, (input, target, label, input_name) in enumerate(test_data_loader):
         print('%d images are generated.' % (i + 1))
 
     else:
-        input_ori = transforms.ToPILImage()(input_np)
+        input_ori = transforms.ToPILImage()(input_np)        
         input_ori = test_transform(input_ori)
         
         input_ori = torch.unsqueeze(input_ori, 0)        
