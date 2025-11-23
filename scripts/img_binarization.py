@@ -8,11 +8,21 @@ from classifier import CrackClassifier
 import cv2 as cv
 import time
 import numpy as np
+import argparse
+import functools
 
 root_dir = './model_crack500_results/best/'
 out_dir = './outputs_all/'
 if not os.path.exists(out_dir):
     os.mkdir(out_dir)
+    
+classification_results_path = './classification_results.csv'
+filename_to_label = {}
+if os.path.exists(classification_results_path):
+    with open(classification_results_path, 'r') as f:
+        for line in f:
+            filename, label = line.strip().split(',')
+            filename_to_label[filename] = int(label)
 
 
 def bilater_Otsu(img_path):
@@ -133,21 +143,26 @@ def bilater_otsu_after_combining_w_edges(img_path, power=0.8):
     cv.imwrite(new_path, Otsu_map)
     
     
-def bilater_otsu_after_combining_w_edges_and_classifier(img_path, power=0.8):
-    classifier_path = './saved-model/crack_classifier_resnet18.pth'
-    model = CrackClassifier(model_path=classifier_path)
-    
-    # Use classifier to decide whether to apply Otsu
-    test_dir = './crack_segmentation_dataset/test/images/'
-    original_file = ""
-    for filename in os.listdir(test_dir):
-        if filename.replace('.jpg', '') == img_path.replace('.png', ''):
-            original_file = filename
-            break
-    if original_file == "":
-        print(f"Original file for {img_path} not found.")
-        return
-    label = model.predict(os.path.join(test_dir, original_file))
+def bilater_otsu_after_combining_w_edges_and_classifier(img_path, power=0.8, canny_threshold1=100, canny_threshold2=200):        
+    # Use classifier to decide whether to apply transformations
+    # classification_results_path = './classification_results.csv'
+    # classifier_path = './saved-model/crack_classifier_resnet18.pth'
+    # model = CrackClassifier(model_path=classifier_path)
+    # test_dir = './crack_segmentation_dataset/test/images/'
+    # original_file = ""
+    # for filename in os.listdir(test_dir):
+    #     if filename.replace('.jpg', '') == img_path.replace('.png', ''):
+    #         original_file = filename
+    #         break
+    # if original_file == "":
+    #     print(f"Original file for {img_path} not found.")
+    #     return
+    # label = model.predict(os.path.join(test_dir, original_file))
+    # with open(classification_results_path, 'a') as f:
+    #     f.write(f"{original_file.replace('.jpg', '')},{label}\n")
+        
+    # Read label from precomputed results
+    label = filename_to_label[img_path.replace('.png', '')]
     
     if label == 0:  # non-crack
         # return empty mask
@@ -156,7 +171,7 @@ def bilater_otsu_after_combining_w_edges_and_classifier(img_path, power=0.8):
         img = cv.imread(os.path.join(root_dir, img_path))
         img_bilater = cv.bilateralFilter(img, 25, 450, 15)
         img_bilater_gray = cv.cvtColor(img_bilater, cv.COLOR_BGR2GRAY)
-        edges = cv.Canny(img_bilater_gray, 100, 200)
+        edges = cv.Canny(img_bilater_gray, canny_threshold1, canny_threshold2)
         distance = cv.distanceTransform(255 - edges, cv.DIST_L2, 5)
         distance = cv.normalize(distance, None, 0, 1.0, cv.NORM_MINMAX)
         # Power transform to enhance distance effect
@@ -175,13 +190,43 @@ def bilater_otsu_after_combining_w_edges_and_classifier(img_path, power=0.8):
 
     
 def main():
+    parser = argparse.ArgumentParser(description="Image Binarization with Various Methods")
+    parser.add_argument('--method', type=str, default='bilater_otsu_after_combining_w_edges_and_classifier',
+                        help='Binarization method to use')
+    parser.add_argument('--power', type=float, default=0.8, required=True,
+                        help='Power parameter for methods that use it')
+    parser.add_argument('--canny_threshold1', type=int, default=100, required=True,
+                        help='First threshold for the hysteresis procedure in Canny edge detector')
+    parser.add_argument('--canny_threshold2', type=int, default=200, required=True,
+                        help='Second threshold for the hysteresis procedure in Canny edge detector')
+    args = parser.parse_args()
+    
+    function_map = {
+        'bilater_Otsu': bilater_Otsu,
+        'bilater_adaptive_thresh': bilater_adaptive_thresh,
+        'bilater_otsu_w_classifier': bilater_otsu_w_classifier,
+        'bilater_otsu_w_edges': bilater_otsu_w_edges,
+        'bilater_otsu_w_edges_and_classifier': bilater_otsu_w_edges_and_classifier,
+        'bilater_otsu_after_combining_w_edges': bilater_otsu_after_combining_w_edges,
+        'bilater_otsu_after_combining_w_edges_and_classifier': bilater_otsu_after_combining_w_edges_and_classifier
+    }
+    
+    if args.method not in function_map:
+        print(f"Method {args.method} not recognized. Available methods: {list(function_map.keys())}")
+        return
+    
+    func = functools.partial(function_map[args.method],
+                             power=args.power, 
+                             canny_threshold1=args.canny_threshold1, 
+                             canny_threshold2=args.canny_threshold2)
+    
     list_image = os.listdir(root_dir)
-    print(list_image)
+    # print(list_image)
     workers = os.cpu_count()
     # number of processors used will be equal to workers
     with Pool(workers) as p:
         # p.map(bilater_img, list_image)
-        p.map(bilater_otsu_after_combining_w_edges_and_classifier, list_image)
+        p.map(func, list_image)
 
 if __name__ == '__main__':
     time1 = time.time()

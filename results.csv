@@ -12,3 +12,28 @@ bilater_otsu_after_combining_w_edges,0.2264,0.1569,0.1766,0.6280,0.8611
 bilater_otsu_after_combining_w_edges_pt1.5,0.2243,0.1554,0.1739,0.6337,0.8569
 bilater_otsu_after_combining_w_edges_pt0.8,0.2275,0.1577,0.1780,0.6244,0.8633
 bilater_otsu_after_combining_w_edges_pt0.8_and_classifier,0.3044,0.2348,0.2586,0.6234,0.8739, <------
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c180_c2180,0.3039,0.2340,0.2578,0.6253,0.8743
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c180_c2190,0.3044,0.2346,0.2584,0.6239,0.8742
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c180_c2200,0.3045,0.2347,0.2585,0.6239,0.8739
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c180_c2210,0.3041,0.2345,0.2587,0.6237,0.8737
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c180_c2220,0.3041,0.2345,0.2591,0.6223,0.8732
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c190_c2180,0.3039,0.2340,0.2579,0.6249,0.8744
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c190_c2190,0.3044,0.2346,0.2584,0.6237,0.8742
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c190_c2200,0.3044,0.2347,0.2585,0.6237,0.8739
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c190_c2210,0.3040,0.2345,0.2587,0.6235,0.8737
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c190_c2220,0.3042,0.2346,0.2592,0.6222,0.8732
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1100_c2180,0.3039,0.2340,0.2579,0.6247,0.8743
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1100_c2190,0.3045,0.2346,0.2585,0.6236,0.8742
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1100_c2200,0.3044,0.2348,0.2586,0.6234,0.8739, <------
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1100_c2210,0.3040,0.2345,0.2587,0.6233,0.8736
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1100_c2220,0.3042,0.2346,0.2593,0.6219,0.8732
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1110_c2180,0.3039,0.2340,0.2579,0.6246,0.8744
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1110_c2190,0.3045,0.2347,0.2586,0.6233,0.8742
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1110_c2200,0.3045,0.2348,0.2587,0.6232,0.8739
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1110_c2210,0.3041,0.2345,0.2589,0.6230,0.8737
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1110_c2220,0.3042,0.2347,0.2594,0.6216,0.8733
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1120_c2180,0.3040,0.2341,0.2581,0.6243,0.8745
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1120_c2190,0.3046,0.2347,0.2587,0.6231,0.8743
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1120_c2200,0.3045,0.2349,0.2588,0.6229,0.8740
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1120_c2210,0.3041,0.2346,0.2590,0.6227,0.8738
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1120_c2220,0.3042,0.2347,0.2595,0.6214,0.8733

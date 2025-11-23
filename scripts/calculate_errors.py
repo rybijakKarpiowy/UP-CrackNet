@@ -5,7 +5,7 @@ from PIL import Image
 import argparse
 
 parser = argparse.ArgumentParser(description='Calculate segmentation errors')
-parser.add_argument('approach_name', type=str, help='Name of the segmentation approach')
+parser.add_argument('--approach_name', type=str, help='Name of the segmentation approach')
 args = parser.parse_args()
 
 # F1 IoU Pr Re Acc
