@@ -28,12 +28,14 @@ def main():
     
     train_transforms = transforms.Compose([
         transforms.Resize((448, 448)),
+        transforms.RandomEqualize(1.0),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.505, 0.494, 0.474], std=[0.098, 0.099, 0.099])
     ])
     val_transforms = transforms.Compose([
         transforms.Resize((448, 448)),
+        transforms.RandomEqualize(1.0),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.505, 0.494, 0.474], std=[0.098, 0.099, 0.099])
     ])
@@ -75,6 +77,7 @@ if __name__ == '__main__':
         labels=[0 if f.startswith('noncrack') else 1 for f in os.listdir('./crack_segmentation_dataset/test/images/')],
         transform=transforms.Compose([
             transforms.Resize((448, 448)),
+            transforms.RandomEqualize(1.0),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.1, 0.1, 0.1])
         ])

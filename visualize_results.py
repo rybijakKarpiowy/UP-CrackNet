@@ -4,8 +4,8 @@ from matplotlib import pyplot as plt
 import cv2 as cv
 
 
-images_dir = './crack_segmentation_dataset/test/images/'
-true_masks_dir = './crack_segmentation_dataset/test/masks/'
+images_dir = './inputs_all/test/images/'
+true_masks_dir = './inputs_all/test/masks/'
 predicted_masks_dir = './outputs_all/'
 
 def visualize_results(image_name):

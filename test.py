@@ -37,9 +37,10 @@ if not os.path.exists(save_error_dir):
 
 # Data pre-processing
 test_transform = transforms.Compose([transforms.Resize(params.input_size),
-                                     transforms.ToTensor(),
-                                     transforms.Normalize(mean=[0.505, 0.494, 0.474], std=[0.098, 0.099, 0.099])
-                                     ])
+                                    transforms.RandomEqualize(1.0),
+                                    transforms.ToTensor(),
+                                    transforms.Normalize(mean=[0.505, 0.494, 0.474], std=[0.098, 0.099, 0.099])
+                                    ])
 
 # Test data
 test_data = DatasetFromFolder(data_dir, subfolder='test', direction=params.direction, transform=test_transform)

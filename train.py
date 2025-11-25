@@ -16,11 +16,13 @@ from torch.utils.tensorboard import SummaryWriter
 from PS_loss import StyleLoss, PerceptualLoss
 
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+torch.cuda.empty_cache()
+torch.cuda.set_per_process_memory_fraction(0.9)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', required=False, default='all_crack500_train', help='input dataset')
 parser.add_argument('--direction', required=False, default='AtoB', help='input and target image order')
-parser.add_argument('--batch_size', type=int, default=4, help='train batch size')
+parser.add_argument('--batch_size', type=int, default=2, help='train batch size')
 parser.add_argument('--ngf', type=int, default=64)
 parser.add_argument('--ndf', type=int, default=64)
 parser.add_argument('--input_size', type=int, default=448, help='input size')
@@ -29,7 +31,7 @@ parser.add_argument('--crop_size', type=int, default=448, help='crop size (0 is 
 parser.add_argument('--fliplr', type=bool, default=True, help='random fliplr True of False')
 parser.add_argument('--num_epochs', type=int, default=1000, help='number of train epochs')
 parser.add_argument('--lrG', type=float, default=0.0001, help='learning rate for generator, default=0.0002')
-parser.add_argument('--lrD', type=float, default=0.0004, help='learning rate for discriminator, default=0.0002')
+parser.add_argument('--lrD', type=float, default=0.001, help='learning rate for discriminator, default=0.0002')
 parser.add_argument('--lamb', type=float, default=100, help='lambda for L1 loss')
 parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for Adam optimizer')
 parser.add_argument('--beta2', type=float, default=0.999, help='beta2 for Adam optimizer')
@@ -109,12 +111,13 @@ def ssim(img1, img2, window_size = 11, size_average = True):
 
 
 data_dir = './crack_segmentation_dataset/noncrack'
-model_dir = './saved-model/448/'
+model_dir = './saved-model/448_equalized/'
 
 if not os.path.exists(model_dir):
     os.mkdir(model_dir)
 
 transform = transforms.Compose([transforms.Resize(params.input_size),
+                                transforms.RandomEqualize(1.0),
                                 transforms.ToTensor(),
                                 transforms.Normalize(mean=[0.505, 0.494, 0.474], std=[0.098, 0.099, 0.099])
                                 ])
@@ -128,7 +131,9 @@ train_data_loader = torch.utils.data.DataLoader(dataset=train_data,
                                                 batch_size=params.batch_size,
                                                 shuffle=True,
                                                 # What is pin memory about??
-                                                pin_memory=True, num_workers=2, prefetch_factor=4, persistent_workers=True)
+                                                pin_memory=True, num_workers=1, prefetch_factor=2,
+                                                # persistent_workers=True
+                                                )
 
 test_data = DatasetFromFolder(data_dir, subfolder='validation', direction=params.direction, transform=transform)
 

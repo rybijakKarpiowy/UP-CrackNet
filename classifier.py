@@ -14,6 +14,7 @@ class CrackClassifier:
         self.model = self._load_model(model_path) if model_path else self._initialize_model()
         self.transform = transforms.Compose([
             transforms.Resize((448, 448)),
+            transforms.RandomEqualize(1.0),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.505, 0.494, 0.474], std=[0.098, 0.099, 0.099])
         ])
