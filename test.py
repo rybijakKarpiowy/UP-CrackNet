@@ -49,7 +49,6 @@ test_data_loader = torch.utils.data.DataLoader(dataset=test_data,
                                                shuffle=False)
 # Load model
 G = Generator448(3, params.ngf, 3)
-# add by nachuan
 D = Discriminator448(6, params.ndf, 1)
 D.cuda()
 G.cuda()

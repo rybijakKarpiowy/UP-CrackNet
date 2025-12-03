@@ -193,11 +193,11 @@ def main():
     parser = argparse.ArgumentParser(description="Image Binarization with Various Methods")
     parser.add_argument('--method', type=str, default='bilater_otsu_after_combining_w_edges_and_classifier',
                         help='Binarization method to use')
-    parser.add_argument('--power', type=float, default=0.8, required=True,
+    parser.add_argument('--power', type=float, default=0.8,
                         help='Power parameter for methods that use it')
-    parser.add_argument('--canny_threshold1', type=int, default=100, required=True,
+    parser.add_argument('--canny_threshold1', type=int, default=100,
                         help='First threshold for the hysteresis procedure in Canny edge detector')
-    parser.add_argument('--canny_threshold2', type=int, default=200, required=True,
+    parser.add_argument('--canny_threshold2', type=int, default=200,
                         help='Second threshold for the hysteresis procedure in Canny edge detector')
     args = parser.parse_args()
     
