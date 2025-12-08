@@ -1,4 +1,4 @@
-from classifier import CrackClassifier
+from models.model_classifier import CrackClassifier
 import torch
 import os
 from torch.utils.data import DataLoader

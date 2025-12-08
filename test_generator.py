@@ -3,8 +3,8 @@ import torch
 from torchvision import transforms
 from torch.autograd import Variable
 from dataset_test import DatasetFromFolder
-from model import Discriminator448, Generator, Discriminator, Generator448
-import utils
+from models.model import Discriminator448, Generator, Discriminator, Generator448
+import utils.utils as utils
 import argparse
 import os
 from stride_augmentation import *
