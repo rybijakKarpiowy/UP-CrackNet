@@ -2,12 +2,12 @@ import numpy as np
 import torch
 from torchvision import transforms
 from torch.autograd import Variable
-from dataset_test import DatasetFromFolder
-from models.model import Discriminator448, Generator, Discriminator, Generator448
+from datasets.dataset_test import DatasetFromFolder
+from models.model import Discriminator448, Generator448
 import utils.utils as utils
 import argparse
 import os
-from stride_augmentation import *
+from utils.stride_augmentation import *
 from matplotlib import pyplot as plt
 
 
@@ -37,7 +37,7 @@ if not os.path.exists(save_error_dir):
 
 # Data pre-processing
 test_transform = transforms.Compose([transforms.Resize(params.input_size),
-                                    transforms.RandomEqualize(1.0),
+                                    
                                     transforms.ToTensor(),
                                     transforms.Normalize(mean=[0.505, 0.494, 0.474], std=[0.098, 0.099, 0.099])
                                     ])

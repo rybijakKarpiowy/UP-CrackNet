@@ -1,28 +1,29 @@
 import torch
 from torchvision import transforms
 from torch.autograd import Variable
-from dataset import DatasetFromFolder
-from model import Generator448, Discriminator448
+from datasets.dataset import DatasetFromFolder
+from models.model import Generator448, Discriminator448
 import utils
 import argparse
 import os
-from logger import Logger
+from utils.logger import Logger
 from math import exp
 import torch.nn.functional as F
-from msgms_loss import MSGMS_Loss
+from utils.msgms_loss import MSGMS_Loss
 import time
 from torch.utils.tensorboard import SummaryWriter 
-
-from PS_loss import StyleLoss, PerceptualLoss
+from utils.PS_loss import StyleLoss, PerceptualLoss
+from torch.nn.functional import binary_cross_entropy
 
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 torch.cuda.empty_cache()
-torch.cuda.set_per_process_memory_fraction(0.9)
+# torch.autograd.set_detect_anomaly(True)
+# torch.cuda.set_per_process_memory_fraction(0.9)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', required=False, default='all_crack500_train', help='input dataset')
 parser.add_argument('--direction', required=False, default='AtoB', help='input and target image order')
-parser.add_argument('--batch_size', type=int, default=2, help='train batch size')
+parser.add_argument('--batch_size', type=int, default=4, help='train batch size')
 parser.add_argument('--ngf', type=int, default=64)
 parser.add_argument('--ndf', type=int, default=64)
 parser.add_argument('--input_size', type=int, default=448, help='input size')
@@ -38,7 +39,7 @@ parser.add_argument('--beta2', type=float, default=0.999, help='beta2 for Adam o
 params = parser.parse_args()
 print(params)
 
-writer = SummaryWriter('./path/log2')
+writer = SummaryWriter(f'./path/G_D_448_ngf_{params.ngf}_ndf_{params.ndf}_l2regclip1')
 
 # SSIM:
 def gaussian(window_size, sigma):
@@ -111,13 +112,13 @@ def ssim(img1, img2, window_size = 11, size_average = True):
 
 
 data_dir = './crack_segmentation_dataset/noncrack'
-model_dir = './saved-model/448_equalized/'
+model_dir = f'./saved-model/G_D_448_ngf_{params.ngf}_ndf_{params.ndf}_l2regclip1/'
 
 if not os.path.exists(model_dir):
     os.mkdir(model_dir)
 
 transform = transforms.Compose([transforms.Resize(params.input_size),
-                                transforms.RandomEqualize(1.0),
+                                
                                 transforms.ToTensor(),
                                 transforms.Normalize(mean=[0.505, 0.494, 0.474], std=[0.098, 0.099, 0.099])
                                 ])
@@ -130,9 +131,10 @@ train_data = DatasetFromFolder(data_dir, subfolder='train', direction=params.dir
 train_data_loader = torch.utils.data.DataLoader(dataset=train_data,
                                                 batch_size=params.batch_size,
                                                 shuffle=True,
-                                                # What is pin memory about??
-                                                pin_memory=True, num_workers=1, prefetch_factor=2,
-                                                # persistent_workers=True
+                                                pin_memory=True,
+                                                num_workers=1,
+                                                prefetch_factor=4,
+                                                persistent_workers=True
                                                 )
 
 test_data = DatasetFromFolder(data_dir, subfolder='validation', direction=params.direction, transform=transform)
@@ -208,6 +210,12 @@ for epoch in range(params.num_epochs):
         D_real_loss = BCE_loss(D_real_decision, real_)
 
         gen_image = G(x_)
+        # Check if generated images are nan
+        if torch.isnan(gen_image).any():
+            print("gen_image contains NaN values")
+            print(torch.isnan(gen_image).sum())
+            print("does input contain NaN values?", torch.isnan(x_).any())
+            continue
         D_fake_decision = D(x_, gen_image).squeeze()
         fake_ = Variable(torch.zeros(D_fake_decision.size()).cuda())
         D_fake_loss = BCE_loss(D_fake_decision, fake_)
@@ -234,6 +242,7 @@ for epoch in range(params.num_epochs):
         G_loss = G_fake_loss + l1_loss
         G_optimizer.zero_grad()
         G_loss.backward()
+        torch.nn.utils.clip_grad_norm_(D.parameters(), max_norm=1.0, norm_type=2.0)
         G_optimizer.step()
 
         # loss values

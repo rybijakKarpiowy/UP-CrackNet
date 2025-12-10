@@ -4,3 +4,7 @@
 /saved-model
 /outputs_all
 /inputs_all
+/utils/__pycache__
+*.pyc
+outputs_all.rar
+inputs_all.rar

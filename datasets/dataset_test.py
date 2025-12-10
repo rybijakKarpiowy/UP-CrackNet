@@ -5,7 +5,7 @@ import os
 import random
 import cv2 as cv
 from torchvision import datasets, transforms
-from stride_augmentation import *
+from utils.stride_augmentation import *
 
 class DatasetFromFolder(data.Dataset):
     def __init__(self, image_dir, subfolder='train', direction='BtoA', transform=None, resize_scale=None, crop_size=None, fliplr=False):

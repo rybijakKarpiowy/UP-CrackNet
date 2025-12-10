@@ -5,7 +5,7 @@ import os
 import random
 import cv2 as cv
 from torchvision import datasets, transforms
-from stride_augmentation import *
+from utils.stride_augmentation import *
 from scripts.checkboard_augmentation import *
 
 class DatasetFromFolder(data.Dataset):
