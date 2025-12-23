@@ -11,7 +11,9 @@ import numpy as np
 import argparse
 import functools
 
-root_dir = './model_crack500_results/best/'
+model_name = 'G_D_448_ngf_64_ndf_64_D_train_thresh_lrG_0.0008_lrD_0.0002'
+
+root_dir = './model_crack500_results/' + model_name + '/'
 out_dir = './outputs_all/'
 if not os.path.exists(out_dir):
     os.mkdir(out_dir)

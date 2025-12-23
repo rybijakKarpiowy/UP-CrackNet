@@ -22,10 +22,11 @@ parser.add_argument('--input_size', type=int, default=448, help='input size')
 params = parser.parse_args()
 print(params)
 
+model_name = 'G_D_448_ngf_64_ndf_64_D_train_thresh_lrG_0.0008_lrD_0.0002'
 
 data_dir = './crack_segmentation_dataset/'
-model_dir = './saved-model/448/'
-save_error_dir = './model_crack500_results/best/'
+model_dir = './saved-model/' + model_name + '/'
+save_error_dir = './model_crack500_results/' + model_name + '/'
 
 
 # if not os.path.exists(save_dir):

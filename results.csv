@@ -37,3 +37,6 @@ bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1120_c2190,0.3046,0.23
 bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1120_c2200,0.3045,0.2349,0.2588,0.6229,0.8740
 bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1120_c2210,0.3041,0.2346,0.2590,0.6227,0.8738
 bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1120_c2220,0.3042,0.2347,0.2595,0.6214,0.8733
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1100_c2200_fisrt_model,0.3044,0.2348,0.2586,0.6234,0.8739
+bilater_otsu_after_combining_w_edges_and_classifier_p0.8_c1100_c2200_new_model_64_64,0.2422,0.1865,0.1957,0.7155,0.7796
+G_D_448_ngf_64_ndf_64_D_train_thresh_lrG_0.0008_lrD_0.0002,0.2607,0.1991,0.2097,0.7064,0.8319

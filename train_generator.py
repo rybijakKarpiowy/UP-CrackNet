@@ -23,7 +23,7 @@ torch.cuda.empty_cache()
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', required=False, default='all_crack500_train', help='input dataset')
 parser.add_argument('--direction', required=False, default='AtoB', help='input and target image order')
-parser.add_argument('--batch_size', type=int, default=4, help='train batch size')
+parser.add_argument('--batch_size', type=int, default=8, help='train batch size')
 parser.add_argument('--ngf', type=int, default=64)
 parser.add_argument('--ndf', type=int, default=64)
 parser.add_argument('--input_size', type=int, default=448, help='input size')
@@ -31,15 +31,15 @@ parser.add_argument('--resize_scale', type=int, default=512, help='resize scale 
 parser.add_argument('--crop_size', type=int, default=448, help='crop size (0 is false)')
 parser.add_argument('--fliplr', type=bool, default=True, help='random fliplr True of False')
 parser.add_argument('--num_epochs', type=int, default=1000, help='number of train epochs')
-parser.add_argument('--lrG', type=float, default=0.0001, help='learning rate for generator, default=0.0002')
-parser.add_argument('--lrD', type=float, default=0.001, help='learning rate for discriminator, default=0.0002')
+parser.add_argument('--lrG', type=float, default=0.001, help='learning rate for generator, default=0.0002') # test with 0.0008
+parser.add_argument('--lrD', type=float, default=0.0002, help='learning rate for discriminator, default=0.0002') # test with 0.0002
 parser.add_argument('--lamb', type=float, default=100, help='lambda for L1 loss')
 parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for Adam optimizer')
 parser.add_argument('--beta2', type=float, default=0.999, help='beta2 for Adam optimizer')
 params = parser.parse_args()
 print(params)
 
-writer = SummaryWriter(f'./path/G_D_448_ngf_{params.ngf}_ndf_{params.ndf}_l2regclip1')
+writer = SummaryWriter(f'./path/G_D_448_ngf_{params.ngf}_ndf_{params.ndf}_D_lrG_{params.lrG}_lrD_{params.lrD}_every_2nd_epoch/')
 
 # SSIM:
 def gaussian(window_size, sigma):
@@ -112,7 +112,7 @@ def ssim(img1, img2, window_size = 11, size_average = True):
 
 
 data_dir = './crack_segmentation_dataset/noncrack'
-model_dir = f'./saved-model/G_D_448_ngf_{params.ngf}_ndf_{params.ndf}_l2regclip1/'
+model_dir = f'./saved-model/G_D_448_ngf_{params.ngf}_ndf_{params.ndf}_D_lrG_{params.lrG}_lrD_{params.lrD}_every_2nd_epoch/'
 
 if not os.path.exists(model_dir):
     os.mkdir(model_dir)
@@ -168,13 +168,13 @@ G_optimizer = torch.optim.Adam(G.parameters(), lr=params.lrG, betas=(params.beta
 D_optimizer = torch.optim.Adam(D.parameters(), lr=params.lrD, betas=(params.beta1, params.beta2))
 
 def adjust_learning_rate1(optimizer, epoch):
-    lr = 0.001*(0.99**(epoch))
+    lr = params.lrG*(0.99**(epoch))
     print("lr is {}".format(lr))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
 def adjust_learning_rate2(optimizer, epoch):
-    lr = 0.004*(0.99**(epoch))
+    lr = params.lrD*(0.99**(epoch))
     print("lr is {}".format(lr))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
@@ -205,25 +205,22 @@ for epoch in range(params.num_epochs):
         x_ = Variable(input.cuda())
         y_ = Variable(target.cuda())
         
+        # train discriminator every second epoch
         D_real_decision = D(x_, y_).squeeze()
         real_ = Variable(torch.ones(D_real_decision.size()).cuda())
-        D_real_loss = BCE_loss(D_real_decision, real_)
+        if epoch % 2 == 0:
+            D_real_loss = BCE_loss(D_real_decision, real_)
 
-        gen_image = G(x_)
-        # Check if generated images are nan
-        if torch.isnan(gen_image).any():
-            print("gen_image contains NaN values")
-            print(torch.isnan(gen_image).sum())
-            print("does input contain NaN values?", torch.isnan(x_).any())
-            continue
-        D_fake_decision = D(x_, gen_image).squeeze()
-        fake_ = Variable(torch.zeros(D_fake_decision.size()).cuda())
-        D_fake_loss = BCE_loss(D_fake_decision, fake_)
+            gen_image = G(x_)
+            D_fake_decision = D(x_, gen_image).squeeze()
+            fake_ = Variable(torch.zeros(D_fake_decision.size()).cuda())
+            D_fake_loss = BCE_loss(D_fake_decision, fake_)
 
-        D_loss = (D_real_loss + D_fake_loss) * 0.5
-        D_optimizer.zero_grad()
-        D_loss.backward()
-        D_optimizer.step()
+            D_loss = (D_real_loss + D_fake_loss) * 0.5
+        
+            D_optimizer.zero_grad()
+            D_loss.backward()
+            D_optimizer.step()
 
         gen_image = G(x_)
         D_fake_decision = D(x_, gen_image).squeeze()
@@ -242,15 +239,19 @@ for epoch in range(params.num_epochs):
         G_loss = G_fake_loss + l1_loss
         G_optimizer.zero_grad()
         G_loss.backward()
-        torch.nn.utils.clip_grad_norm_(D.parameters(), max_norm=1.0, norm_type=2.0)
+        # torch.nn.utils.clip_grad_norm_(D.parameters(), max_norm=1.0, norm_type=2.0)
         G_optimizer.step()
 
         # loss values
-        D_losses.append(D_loss.item())
+        if epoch % 2 == 0:
+            D_losses.append(D_loss.item())
+        elif D_losses:
+            D_losses.append(D_losses[-1])
+            D_loss = torch.tensor(D_losses[-1])
         G_losses.append(G_loss.item())
         
         print('Epoch [%d/%d], Step [%d/%d], D_loss: %.4f, G_loss: %.4f'
-              % (epoch+1, params.num_epochs, i+1, len(train_data_loader), D_loss.item(), G_loss.item()))
+              % (epoch+1, params.num_epochs, i+1, len(train_data_loader), D_loss.item(), G_loss.item()), end='\r')
         step += 1
 
     writer.add_scalar('G_loss_mean', torch.mean(torch.FloatTensor(G_losses)), epoch)
@@ -284,6 +285,12 @@ for epoch in range(params.num_epochs):
             torch.save(G.state_dict(), model_dir + 'best_G_param.pkl')
             torch.save(D.state_dict(), model_dir + 'best_D_param.pkl')
             print("the best model is epoch_{}".format(epoch + 1))
+            
+        avg_val_loss = val_losses / len(test_data_loader)
+        writer.add_scalar('val_loss_mean', avg_val_loss, epoch)
+        print(f"Epoch [{epoch+1}/{params.num_epochs}], Validation Loss: {avg_val_loss:.4f}")
+            
+    print()
 
     # utils.plot_test_result(test_input, test_target, gen_image, epoch, save=True, save_dir=save_dir)
     if (epoch+1) % 50 == 0:

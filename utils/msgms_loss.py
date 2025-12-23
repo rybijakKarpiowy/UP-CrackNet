@@ -8,24 +8,44 @@ import kornia
 use_cuda = torch.cuda.is_available()
 device = torch.device('cuda' if use_cuda else 'cpu')
 
-
-# Define Prewitt operator:
+# Define Prewitt operator
 class Prewitt(nn.Module):
     def __init__(self):
         super().__init__()
-        self.filter = nn.Conv2d(in_channels=1, out_channels=2, kernel_size=3, stride=1, padding=0, bias=False)
-        Gx = torch.tensor([[-1.0, 0.0, 1.0], [-1.0, 0.0, 1.0], [-1.0, 0.0, 1.0]]) / 3
-        Gy = torch.tensor([[1.0, 1.0, 1.0], [0.0, 0.0, 0.0], [-1.0, -1.0, -1.0]]) / 3
-        G = torch.cat([Gx.unsqueeze(0), Gy.unsqueeze(0)], 0)
-        G = G.unsqueeze(1).to(device)
+        self.filter = nn.Conv2d(
+            in_channels=1,
+            out_channels=2,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            bias=False
+        )
+
+        Gx = torch.tensor(
+            [[-1., 0., 1.],
+             [-1., 0., 1.],
+             [-1., 0., 1.]]
+        ) / 3.0
+
+        Gy = torch.tensor(
+            [[ 1.,  1.,  1.],
+             [ 0.,  0.,  0.],
+             [-1., -1., -1.]]
+        ) / 3.0
+
+        G = torch.stack([Gx, Gy]).unsqueeze(1)
+        G = G.to(device)
         self.filter.weight = nn.Parameter(G, requires_grad=False)
 
     def forward(self, img):
-        x = self.filter(img)
-        x = torch.mul(x, x)
-        x = torch.sum(x, dim=1, keepdim=True)
-        x = torch.sqrt(x)
+        assert torch.isfinite(img).all(), "img has NaNs/Infs"
+        with torch.amp.autocast('cuda', enabled=False):
+            x = self.filter(img.float())
+            x = x * x
+            x = torch.sum(x, dim=1, keepdim=True)
+            x = torch.sqrt(x + 1e-8)
         return x
+
 
 
 # Define the gradient magnitude similarity map:
