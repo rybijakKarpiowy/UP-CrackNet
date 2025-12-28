@@ -2,7 +2,7 @@
 We have implented a solution from this paper:
 https://arxiv.org/abs/2401.15647
 
-Architecture used:
+Architecture used:\
 ![architecture](./x1.png)
 
 The code is implemented in PyTorch. The training script is `train_generator.py`. The dataset is loaded from the folder structure using `DatasetFromFolder` class in `datasets/dataset.py`. The generator and discriminator models are defined in `models/model.py`.
@@ -52,6 +52,7 @@ The best results were achieved with:
 ![training_curves](./plot_D_all.svg)
 
 There are three generators achieving similar losses, but the one with the best binarization results is neither of them. We have chosen the G_D_64_64_lrG0.0008_lrD0.0002 model as the best one based on binarization results.
+##### This model's training curve is shown below for clarity:
 
 ![training_curves](./plot_G_chosen.svg)
 ![training_curves](./plot_D_chosen.svg)
