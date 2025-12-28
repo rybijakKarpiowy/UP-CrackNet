@@ -15,18 +15,26 @@ from matplotlib import pyplot as plt
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', required=False, default='crack500_test', help='input dataset')
 parser.add_argument('--direction', required=False, default='BtoA', help='input and target image order')
-parser.add_argument('--batch_size', type=int, default=1, help='test batch size')
-parser.add_argument('--ngf', type=int, default=64)
-parser.add_argument('--ndf', type=int, default=64)
+parser.add_argument('--batch_size', type=int, default=8, help='test batch size')
 parser.add_argument('--input_size', type=int, default=448, help='input size')
+parser.add_argument('--model_name', type=str, help='model name', required=True)
 params = parser.parse_args()
 print(params)
 
-model_name = 'G_D_448_ngf_64_ndf_64_D_train_thresh_lrG_0.0008_lrD_0.0002'
-
+model_name = params.model_name
 data_dir = './crack_segmentation_dataset/'
 model_dir = './saved-model/' + model_name + '/'
 save_error_dir = './model_crack500_results/' + model_name + '/'
+
+# Get ndf and ngf from model name
+model_name_parts = model_name.split('_')
+ndf = 64
+ngf = 64
+for i, part in enumerate(model_name_parts):
+    if part == 'ndf':
+        ndf = int(model_name_parts[i + 1])
+    if part == 'ngf':
+        ngf = int(model_name_parts[i + 1])
 
 
 # if not os.path.exists(save_dir):
@@ -49,8 +57,8 @@ test_data_loader = torch.utils.data.DataLoader(dataset=test_data,
                                                batch_size=params.batch_size,
                                                shuffle=False)
 # Load model
-G = Generator448(3, params.ngf, 3)
-D = Discriminator448(6, params.ndf, 1)
+G = Generator448(3, ngf, 3)
+D = Discriminator448(6, ndf, 1)
 D.cuda()
 G.cuda()
 
@@ -104,7 +112,7 @@ for i, (input, target, label, input_name) in enumerate(test_data_loader):
             gen_image_all.append(gen_image)
 
         utils.save_error_maps_all(input_name, label, mask_all, input_ori_all, input_stride_all, target, gen_image_all, i, save=True, save_dir=save_error_dir)
-        print('%d images are generated.' % (i + 1))
+        print(f"Processed {i + 1}/{len(test_data_loader)} batches.", end='\r')
 
     else:
         input_ori = transforms.ToPILImage()(input_np)        
@@ -120,4 +128,4 @@ for i, (input, target, label, input_name) in enumerate(test_data_loader):
 
         utils.save_error_maps_gray(input_name, label, input_ori, target, gen_image,
                                   i, save=True, save_dir=save_error_dir)
-        print('%d images are generated.' % (i + 1))
+        print(f"Processed {i + 1}/{len(test_data_loader)} batches.", end='\r')

@@ -11,7 +11,9 @@ import numpy as np
 import argparse
 import functools
 
-model_name = 'G_D_448_ngf_64_ndf_64_D_train_thresh_lrG_0.0008_lrD_0.0002'
+parser = argparse.ArgumentParser(description="Image Binarization with Various Methods")
+parser.add_argument('--model_name', type=str, required=True, help='Name of the model directory')
+model_name = parser.parse_args().model_name
 
 root_dir = './model_crack500_results/' + model_name + '/'
 out_dir = './outputs_all/'
@@ -192,7 +194,6 @@ def bilater_otsu_after_combining_w_edges_and_classifier(img_path, power=0.8, can
 
     
 def main():
-    parser = argparse.ArgumentParser(description="Image Binarization with Various Methods")
     parser.add_argument('--method', type=str, default='bilater_otsu_after_combining_w_edges_and_classifier',
                         help='Binarization method to use')
     parser.add_argument('--power', type=float, default=0.8,

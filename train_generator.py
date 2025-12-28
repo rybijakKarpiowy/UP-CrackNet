@@ -39,7 +39,7 @@ parser.add_argument('--beta2', type=float, default=0.999, help='beta2 for Adam o
 params = parser.parse_args()
 print(params)
 
-writer = SummaryWriter(f'./path/G_D_448_ngf_{params.ngf}_ndf_{params.ndf}_D_lrG_{params.lrG}_lrD_{params.lrD}_every_2nd_epoch/')
+writer = SummaryWriter(f'./logs/G_D_448_ngf_{params.ngf}_ndf_{params.ndf}_D_lrG_{params.lrG}_lrD_{params.lrD}/')
 
 # SSIM:
 def gaussian(window_size, sigma):
@@ -112,7 +112,7 @@ def ssim(img1, img2, window_size = 11, size_average = True):
 
 
 data_dir = './crack_segmentation_dataset/noncrack'
-model_dir = f'./saved-model/G_D_448_ngf_{params.ngf}_ndf_{params.ndf}_D_lrG_{params.lrG}_lrD_{params.lrD}_every_2nd_epoch/'
+model_dir = f'./saved-model/G_D_448_ngf_{params.ngf}_ndf_{params.ndf}_D_lrG_{params.lrG}_lrD_{params.lrD}/'
 
 if not os.path.exists(model_dir):
     os.mkdir(model_dir)
@@ -208,19 +208,18 @@ for epoch in range(params.num_epochs):
         # train discriminator every second epoch
         D_real_decision = D(x_, y_).squeeze()
         real_ = Variable(torch.ones(D_real_decision.size()).cuda())
-        if epoch % 2 == 0:
-            D_real_loss = BCE_loss(D_real_decision, real_)
+        D_real_loss = BCE_loss(D_real_decision, real_)
 
-            gen_image = G(x_)
-            D_fake_decision = D(x_, gen_image).squeeze()
-            fake_ = Variable(torch.zeros(D_fake_decision.size()).cuda())
-            D_fake_loss = BCE_loss(D_fake_decision, fake_)
+        gen_image = G(x_)
+        D_fake_decision = D(x_, gen_image).squeeze()
+        fake_ = Variable(torch.zeros(D_fake_decision.size()).cuda())
+        D_fake_loss = BCE_loss(D_fake_decision, fake_)
 
-            D_loss = (D_real_loss + D_fake_loss) * 0.5
-        
-            D_optimizer.zero_grad()
-            D_loss.backward()
-            D_optimizer.step()
+        D_loss = (D_real_loss + D_fake_loss) * 0.5
+    
+        D_optimizer.zero_grad()
+        D_loss.backward()
+        D_optimizer.step()
 
         gen_image = G(x_)
         D_fake_decision = D(x_, gen_image).squeeze()
@@ -243,11 +242,7 @@ for epoch in range(params.num_epochs):
         G_optimizer.step()
 
         # loss values
-        if epoch % 2 == 0:
-            D_losses.append(D_loss.item())
-        elif D_losses:
-            D_losses.append(D_losses[-1])
-            D_loss = torch.tensor(D_losses[-1])
+        D_losses.append(D_loss.item())
         G_losses.append(G_loss.item())
         
         print('Epoch [%d/%d], Step [%d/%d], D_loss: %.4f, G_loss: %.4f'

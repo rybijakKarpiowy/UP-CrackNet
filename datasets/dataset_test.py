@@ -14,11 +14,11 @@ class DatasetFromFolder(data.Dataset):
         self.target_path = os.path.join(image_dir, subfolder, 'masks')
         self.label_path = os.path.join(image_dir, subfolder, 'masks')
 
-        print(self.input_path)
-        print(self.target_path)
-        print(self.label_path)
+        # print(self.input_path)
+        # print(self.target_path)
+        # print(self.label_path)
         self.image_filenames = [x for x in sorted(os.listdir(self.input_path))]
-        print(self.image_filenames)
+        # print(self.image_filenames)
         self.direction = direction
         self.transform = transform
         self.resize_scale = resize_scale    # resize_scale = 286
